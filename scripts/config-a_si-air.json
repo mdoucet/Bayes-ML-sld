@@ -1,0 +1,29 @@
+{
+"src_dir":"/Users/m2d/git/vae-sld",
+"data_dir":"/Users/m2d/git/vae-sld/data/a_si",
+"data_ref":"/Users/m2d/git/vae-refl/data/a_si/REF_L_183493.txt",
+"train_dir":"/Users/m2d/git/vae-sld/data/a_si/training_data",
+"name":"a_Si",
+"epoch":25,
+"z_left":-100,
+"z_right":2000,
+"dz":10,
+"parameters":[
+{"i": 0, "par": "sld", "bounds": [4, 300]},
+{"i": 1, "par": "sld", "bounds": [4, 10]},
+{"i": 1, "par": "thickness", "bounds": [20, 500]},
+{"i": 1, "par": "roughness", "bounds": [20, 150]},
+{"i": 2, "par": "sld", "bounds": [1, 10]},
+{"i": 2, "par": "thickness", "bounds": [50, 300]},
+{"i": 2, "par": "roughness", "bounds": [20, 100]}
+],
+"model":{"layers":[
+                    {"sld":2.07, "isld":0, "thickness":0, "roughness":11.1, "name":"substrate"},
+                    {"sld":7.5, "isld":0, "thickness":25, "roughness":4, "name":"bulk"},
+                    {"sld":5, "isld":0, "thickness":200, "roughness":15, "name":"oxide"},
+                    {"sld":0, "isld":0, "thickness":0, "roughness":0, "name":"air"}
+                   ],
+         "scale":1,
+         "background":0
+     }
+}
