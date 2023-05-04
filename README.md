@@ -1,1 +1,1 @@
-# vae-sld
+# Bayes ML model to predict SLD distribution
