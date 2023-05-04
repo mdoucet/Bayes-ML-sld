@@ -70,11 +70,11 @@ def workflow(config, n_train=None, v_size=None,
         print(train_data.shape)
         print(train_pars.shape)
 
-        model = vae_model(train_data, train_pars,
+        model = variational_model(train_data, train_pars,
                           z_left=config['z_left'], z_right=config['z_right'], dz=config['dz'])
         _n_train = min(n_train, train_data.shape[0]-v_size)
         history = model.fit(train_data[:_n_train], train_pars[:_n_train],
-                            epochs=epoch, batch_size=2048,
+                            epochs=epoch, batch_size=4048,
                             validation_data=(train_data[-v_size:], train_pars[-v_size:]))
 
         save_model(model, history, name, training_dir)
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     import reflectivity_model
     import network
-    from network import vae_model
+    from network import variational_model
 
     np.random.seed(ns.r_seed)
 

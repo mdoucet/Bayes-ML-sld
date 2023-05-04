@@ -1,0 +1,17 @@
+name: playground
+dependencies:
+- numpy
+- nb_conda
+- python=3.9
+- pip:
+  - pandas
+  - plotly
+  - scipy
+  - periodictable
+  - refl1d
+  - matplotlib
+  - keras
+  - sklearn
+  - lmfit
+  - tensorflow
+  - tensorflow_probability

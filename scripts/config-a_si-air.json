@@ -6,16 +6,17 @@
 "name":"a_Si",
 "epoch":25,
 "z_left":-100,
-"z_right":2000,
+"z_right":1000,
 "dz":10,
 "parameters":[
-{"i": 0, "par": "sld", "bounds": [4, 300]},
+{"i": 0, "par": "roughness", "bounds": [1, 25]},
 {"i": 1, "par": "sld", "bounds": [4, 10]},
-{"i": 1, "par": "thickness", "bounds": [20, 500]},
-{"i": 1, "par": "roughness", "bounds": [20, 150]},
+{"i": 1, "par": "thickness", "bounds": [50, 500]},
+{"i": 1, "par": "roughness", "bounds": [20, 50]},
 {"i": 2, "par": "sld", "bounds": [1, 10]},
 {"i": 2, "par": "thickness", "bounds": [50, 300]},
-{"i": 2, "par": "roughness", "bounds": [20, 100]}
+{"i": 2, "par": "roughness", "bounds": [10, 150]},
+{"i": 3, "par": "roughness", "bounds": [10, 150]}
 ],
 "model":{"layers":[
                     {"sld":2.07, "isld":0, "thickness":0, "roughness":11.1, "name":"substrate"},

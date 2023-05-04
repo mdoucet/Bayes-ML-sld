@@ -6,17 +6,34 @@ import os
 import numpy as np
 np.random.seed(42)
 
-
-
 import json
 import refl1d
 from refl1d.names import *
+
+
+def prepare_fwd(z, sld, z_step, total_steps):
+    """
+        Prepare SLD distribution for use as training data
+    """
+    # reverse the order to that the substrate is on the left.
+    sld = np.flip(sld)
+    z_len = len(z)
+    extra_len = total_steps - z_len
+
+    _z = list(z)
+    for i in range(extra_len):
+        _z.append(z[-1] + z_step*i)
+    z = np.asarray(_z)
+    sld = np.concatenate((sld, sld[-1]*np.ones(extra_len)))
+    return z, sld
 
 
 def calculate_reflectivity_from_profile(q, z_step, sld, q_resolution=0.025):
     """
         Reflectivity calculation using refl1d from an array of microslabs
     """
+    sld = np.flip(sld)
+
     zeros = np.zeros(len(q))
     dq = q_resolution * q
 
@@ -69,10 +86,12 @@ def calculate_reflectivity(q, model_description, q_resolution=0.02,
     q, r = expt.reflectivity()
     q, a = expt._reflamp()
     slabs = expt._render_slabs()
-    slabs._z_left = z_left
-    slabs._z_right = z_right
+    if z_right>0:
+        slabs._z_left = z_left
+        slabs._z_right = z_right
     z, sld, _ = slabs.smooth_profile(dz=dz)
 
+    z, sld = prepare_fwd(z, sld, dz, 60)
     return r, z, sld
 
 
@@ -101,6 +120,8 @@ class ReflectivityModels(object):
         self._refl_array = []
         self._z_array = []
         self._sld_array = []
+        self._z_trunc = []
+        self._sld_trunc = []
         self._train_pars = None
         self._train_data = None
         self._config_name = name

@@ -11,15 +11,13 @@ warnings.filterwarnings('ignore', module='numpy')
 warnings.filterwarnings('ignore')
 
 
-class VAELoss(keras.losses.Loss):
+class ReconstructionLoss(keras.losses.Loss):
     # We probably need to pass the reflectivity model to __init__
     def __init__(self, name='reflectivity', kl_weight=2, reco_weight=200,
-                 z_left=-100, z_right=900, dz=10):
+                 dz=10):
         super().__init__(name=name)
         self.kl_weight = kl_weight
         self.reco_weight = reco_weight
-        self.z_left = z_left
-        self.z_right = z_right
         self.dz = dz
 
     def call(self, y_true, y_pred):
@@ -30,8 +28,7 @@ class VAELoss(keras.losses.Loss):
         #mono_loss = tf.square((z[1:] - z[:-1])/z[1:] )
 
         # Reconstruction loss (MSE)
-        steps = np.arange(101., dtype='float32') * self.dz
-        #steps = np.arange(y_true.shape[1]) * self.dz
+        steps = np.arange(y_true.shape[1]) * self.dz
         q = np.logspace(np.log10(0.009), np.log10(0.16), num=50)
 
         r_true = calculate_reflectivity_from_profile(q, steps, y_true[1].numpy())

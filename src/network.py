@@ -8,7 +8,7 @@ from tensorflow.keras.models import model_from_json
 from tensorflow.keras.utils import CustomObjectScope
 from tensorflow.keras.initializers import glorot_uniform
 
-from loss import VAELoss, kl_metric, nll_metric, reconstruction_mse_metric, mse_metric, mono_metric
+from loss import ReconstructionLoss, kl_metric, nll_metric, reconstruction_mse_metric, mse_metric, mono_metric
 
 
 class SamplingLayer(keras.layers.Layer):
@@ -20,13 +20,15 @@ class SamplingLayer(keras.layers.Layer):
         return z_mean + tf.exp(z_log_var) * epsilon
 
 
-class VAEModel(keras.Model):
+class VariationalModel(keras.Model):
 
     def __init__(self, input_dim=150, latent_dim=421, kl_weight=1, name="sld_vae", **kwargs):
-        super(VAEModel, self).__init__(name=name, **kwargs)
+        super(VariationalModel, self).__init__(name=name, **kwargs)
         self.encoder = create_encoder(input_dim, latent_dim)
 
     def call(self, inputs):
+        # Sample the inputs to simulate statistics
+        inputs = inputs * (1 + 0.09*tf.keras.backend.random_normal(shape=tf.shape(inputs)))
         z_mean, z_log_var = tf.split(self.encoder(inputs), 2, axis=1)
         # We could move the sampling to the loss function and avoid
         # having to define a model class.
@@ -36,11 +38,11 @@ class VAEModel(keras.Model):
         return keras.layers.concatenate([z_mean, z_log_var, z])
 
 
-def vae_model(train_data, train_pars, z_left=-100, z_right=900, dz=10):
-    model = VAEModel(train_data.shape[1], train_pars.shape[1])
+def variational_model(train_data, train_pars, z_left=-100, z_right=900, dz=10):
+    model = VariationalModel(train_data.shape[1], train_pars.shape[1])
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
     model.compile(optimizer, run_eagerly=True,
-                  loss=VAELoss(kl_weight=1, z_left=z_left, z_right=z_right, dz=dz),
+                  loss=ReconstructionLoss(kl_weight=1, dz=dz),
                   #metrics=[kl_metric, nll_metric, reconstruction_mse_metric]
                   )
     return model
@@ -54,8 +56,14 @@ def create_encoder(input_dim, latent_dim, latent_dim_multiplier=2):
                                      keras.layers.Conv1D(filters=40, kernel_size=5, strides=1, activation='relu', padding='same'),
                                      keras.layers.MaxPool1D(pool_size=2),
                                      keras.layers.Conv1D(filters=50, kernel_size=5, strides=1, activation='relu', padding='same'),
+                                     # Added conv1d
+                                     keras.layers.MaxPool1D(pool_size=2),
+                                     keras.layers.Conv1D(filters=50, kernel_size=5, strides=1, activation='relu', padding='same'),
                                      keras.layers.Flatten(),
                                      keras.layers.Dense(400, activation='relu'),
+                                     # Two new layer not in v1
+                                     keras.layers.Dense(400, activation='relu'),
+                                     keras.layers.Dense(200, activation='relu'),
                                      keras.layers.Dense(latent_dim*latent_dim_multiplier),
                                      ])
     return model
@@ -94,6 +102,6 @@ def load_model(model_name, data_dir=''):
     print("Dimensions: %s %s" % (input_dim, output_dim))
     # load weights into new model
     encoder.load_weights(os.path.join(data_dir, '%s.h5' % model_name))
-    model = VAEModel(input_dim=input_dim, latent_dim=output_dim)
+    model = VariationalModel(input_dim=input_dim, latent_dim=output_dim)
     model.encoder = encoder
     return model

@@ -1,0 +1,34 @@
+{
+"src_dir":"/Users/m2d/git/vae-sld",
+"data_dir":"/Users/m2d/git/vae-sld/data/erik",
+"data_ref":"/Users/m2d/git/vae-refl/data/a_si/REF_L_183493.txt",
+"train_dir":"/Users/m2d/git/vae-sld/data/erik/training_data",
+"name":"erik",
+"epoch":80,
+"z_left":-50,
+"z_right":400,
+"dz":10,
+"parameters":[
+{"i": 0, "par": "sld", "bounds": [-1, 1]},
+{"i": 0, "par": "roughness", "bounds": [1, 45]},
+{"i": 1, "par": "sld", "bounds": [-1, 6.5]},
+{"i": 1, "par": "thickness", "bounds": [5, 100]},
+{"i": 1, "par": "roughness", "bounds": [5, 45]},
+{"i": 2, "par": "sld", "bounds": [-1, 6.5]},
+{"i": 2, "par": "thickness", "bounds": [5, 100]},
+{"i": 2, "par": "roughness", "bounds": [5, 45]},
+{"i": 3, "par": "sld", "bounds": [-1, 6.5]},
+{"i": 3, "par": "thickness", "bounds": [5, 100]},
+{"i": 3, "par": "roughness", "bounds": [5, 45]}
+],
+"model":{"layers":[
+                    {"sld":6.2, "isld":0, "thickness":0, "roughness":25, "name":"thf"},
+                    {"sld":2.8, "isld":0, "thickness":310, "roughness":16, "name":"layer1"},
+                    {"sld":3, "isld":0, "thickness":50, "roughness":16, "name":"layer1"},
+                    {"sld":6.47, "isld":0, "thickness":530, "roughness":6.2, "name":"Cu"},
+                    {"sld":4.18, "isld":0, "thickness":0, "roughness":11.1, "name":"substrate"}
+                   ],
+         "scale":1,
+         "background":0
+     }
+}
