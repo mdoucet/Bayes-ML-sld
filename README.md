@@ -17,5 +17,5 @@ python train.py  -n 100000 -v 1000 -f config-erik.json --create
 Train the ML model:
 
 ```
-python train.py  -n 1000000 -v 1000 -f config-erik.json
+python train.py  -n 100000 -v 1000 -f config-erik.json
 ```
