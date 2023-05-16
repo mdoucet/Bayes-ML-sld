@@ -77,8 +77,7 @@ def workflow(config, n_train=None, v_size=None,
         print(train_data.shape)
         print(train_pars.shape)
 
-        model = variational_model(train_data, train_pars,
-                          z_left=config['z_left'], z_right=config['z_right'], dz=config['dz'])
+        model = variational_model(train_data, train_pars, dz=config['dz'])
         _n_train = min(n_train, train_data.shape[0]-v_size)
         history = model.fit(train_data[:_n_train], train_pars[:_n_train],
                             epochs=epoch, batch_size=4048,
