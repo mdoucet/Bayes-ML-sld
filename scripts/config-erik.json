@@ -1,7 +1,7 @@
 {
 "src_dir":"/Users/m2d/git/vae-sld",
 "data_dir":"/Users/m2d/git/vae-sld/data/erik",
-"data_ref":"/Users/m2d/git/vae-refl/data/a_si/REF_L_183493.txt",
+"data_ref":"/Users/m2d/git/vae-sld/data/REFL_201298_reduced_data.txt",
 "train_dir":"/Users/m2d/git/vae-sld/data/erik/training_data",
 "name":"erik",
 "epoch":80,

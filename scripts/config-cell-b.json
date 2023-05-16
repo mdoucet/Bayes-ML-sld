@@ -1,0 +1,32 @@
+{
+"src_dir":"/Users/m2d/git/vae-sld",
+"data_dir":"/Users/m2d/git/vae-sld/data/cell_b",
+"data_ref":"/Users/m2d/git/vae-sld/data/REFL_201298_reduced_data.txt",
+"train_dir":"/Users/m2d/git/vae-sld/data/cell_b/training_data",
+"name":"cell_b",
+"epoch":55,
+"use_errors":true,
+"max_thick":2000,
+"dz":10,
+"parameters":[
+{"i": 0, "par": "roughness", "bounds": [1, 150]},
+{"i": 1, "par": "sld", "bounds": [-2, 6.5]},
+{"i": 1, "par": "thickness", "bounds": [50, 500]},
+{"i": 1, "par": "roughness", "bounds": [5, 50]},
+{"i": 2, "par": "sld", "bounds": [0, 6.5]},
+{"i": 2, "par": "thickness", "bounds": [10, 200]},
+{"i": 2, "par": "roughness", "bounds": [5, 50]}
+],
+"model":{"layers":[
+                    {"sld":6.2, "isld":0, "thickness":0, "roughness":86, "name":"thf"},
+                    {"sld":2.8, "isld":0, "thickness":310, "roughness":16, "name":"layer1"},
+                    {"sld":3, "isld":0, "thickness":50, "roughness":16, "name":"layer1"},
+                    {"sld":6.47, "isld":0, "thickness":530, "roughness":6.2, "name":"Cu"},
+                    {"sld":-2, "isld":0, "thickness":52.3, "roughness":8.7, "name":"Ti"},
+                    {"sld":2.65, "isld":0, "thickness":25, "roughness":2.6, "name":"siox"},
+                    {"sld":2.07, "isld":0, "thickness":0, "roughness":11.1, "name":"substrate"}
+                   ],
+         "scale":1,
+         "background":0
+     }
+}

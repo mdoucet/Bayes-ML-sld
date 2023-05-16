@@ -18,6 +18,7 @@ def prepare_fwd(z, sld, z_step, total_steps):
     # reverse the order to that the substrate is on the left.
     sld = np.flip(sld)
     z_len = len(z)
+    assert(total_steps >= z_len)
     extra_len = total_steps - z_len
 
     _z = list(z)
@@ -60,7 +61,7 @@ def calculate_reflectivity_from_profile(q, z_step, sld, q_resolution=0.025):
 
 
 def calculate_reflectivity(q, model_description, q_resolution=0.02,
-                           z_left=-100, z_right=900, dz=5):
+                           max_thickness=1900, dz=5):
     """
         Reflectivity calculation using refl1d
     """
@@ -86,12 +87,9 @@ def calculate_reflectivity(q, model_description, q_resolution=0.02,
     q, r = expt.reflectivity()
     q, a = expt._reflamp()
     slabs = expt._render_slabs()
-    if z_right>0:
-        slabs._z_left = z_left
-        slabs._z_right = z_right
     z, sld, _ = slabs.smooth_profile(dz=dz)
-
-    z, sld = prepare_fwd(z, sld, dz, 60)
+    total_steps = int(max_thickness / dz)
+    z, sld = prepare_fwd(z, sld, dz, total_steps)
     return r, z, sld
 
 
@@ -116,7 +114,7 @@ class ReflectivityModels(object):
                   dict(i=2, par='roughness', bounds=[0, 40]),
                  ]
 
-    def __init__(self, q=None, name='thin_film', z_left=-100, z_right=900, dz=5):
+    def __init__(self, q=None, name='thin_film', max_thickness=1900, dz=5):
         self._refl_array = []
         self._z_array = []
         self._sld_array = []
@@ -125,8 +123,7 @@ class ReflectivityModels(object):
         self._train_pars = None
         self._train_data = None
         self._config_name = name
-        self.z_left = z_left
-        self.z_right = z_right
+        self.max_thickness = max_thickness
         self.dz = dz
 
         if q is None:
@@ -144,8 +141,7 @@ class ReflectivityModels(object):
         m = cls(None, name=pars['name'])
         m.model_description =  pars['model']
         m.parameters = pars['parameters']
-        m.z_left = pars['z_left']
-        m.z_right = pars['z_right']
+        m.max_thickness = pars['max_thickness']
         m.dz = pars['dz']
         return m
 
@@ -185,8 +181,7 @@ class ReflectivityModels(object):
         for p in pars_array:
             _desc = self.get_model_description(p)
             r, z, sld = calculate_reflectivity(self.q, _desc,
-                                               z_left=self.z_left,
-                                               z_right=self.z_right,
+                                               max_thickness=self.max_thickness,
                                                dz=self.dz)
             self._refl_array.append(r)
             self._z_array.append(z)
@@ -207,6 +202,10 @@ class ReflectivityModels(object):
         if errors is None:
             self._train_data = np.log10(self._refl_array*self.q**2/self.q[0]**2)
             #self._train_data = self._refl_array*self.q**2/self.q[0]**2
+        else:
+            dr = self._refl_array * errors
+            _r = np.random.normal(self._refl_array, dr)
+            self._train_data = np.log10(_r*self.q**2/self.q[0]**2)
 
         self._train_pars = self._sld_array
 

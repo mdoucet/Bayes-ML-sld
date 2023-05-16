@@ -27,8 +27,6 @@ class VariationalModel(keras.Model):
         self.encoder = create_encoder(input_dim, latent_dim)
 
     def call(self, inputs):
-        # Sample the inputs to simulate statistics
-        inputs = inputs * (1 + 0.09*tf.keras.backend.random_normal(shape=tf.shape(inputs)))
         z_mean, z_log_var = tf.split(self.encoder(inputs), 2, axis=1)
         # We could move the sampling to the loss function and avoid
         # having to define a model class.

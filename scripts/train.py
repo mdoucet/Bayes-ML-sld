@@ -40,6 +40,11 @@ def workflow(config, n_train=None, v_size=None,
     parameters = config['parameters']
     epoch = config['epoch']
     name = config['name']
+    use_errors = False
+    if 'use_errors' in config:
+        use_errors = config['use_errors']
+
+    ref_data_file = config['data_ref']
     print("Processing %s" % name)
     print("TF version: %s" % tf.__version__)
 
@@ -47,8 +52,7 @@ def workflow(config, n_train=None, v_size=None,
 
     # Define the reflectivity model we are going to be generating/using
     m = reflectivity_model.ReflectivityModels(q=q_ref, name=name,
-                                              z_left=config['z_left'],
-                                              z_right=config['z_right'],
+                                              max_thickness=config['max_thick'],
                                               dz=config['dz'])
     m.model_description =  model
     m.parameters = parameters
@@ -58,7 +62,10 @@ def workflow(config, n_train=None, v_size=None,
         print("Creating training data")
         t_0 = time.time()
         if use_errors:
-            training_set(training_dir, m, n_train=n_train, errors=data_off[2]/data_off[1])
+            ref_data = np.loadtxt(ref_data_file).T
+            _err = ref_data[2] / ref_data[1]
+            errors = np.interp(m.q, ref_data[0], _err)
+            training_set(training_dir, m, n_train=n_train, errors=errors)
         else:
             training_set(training_dir, m, n_train=n_train)
         print("Training data created in %g sec" % (time.time()-t_0))
@@ -141,5 +148,4 @@ if __name__ == "__main__":
     workflow(config,
              n_train=ns.t_size,
              v_size=ns.v_size,
-             use_errors=False,
              create=ns.create)
