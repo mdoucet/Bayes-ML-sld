@@ -141,7 +141,7 @@ class ReflectivityModels(object):
         m = cls(None, name=pars['name'])
         m.model_description =  pars['model']
         m.parameters = pars['parameters']
-        m.max_thickness = pars['max_thickness']
+        m.max_thickness = pars['max_thick']
         m.dz = pars['dz']
         return m
 
