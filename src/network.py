@@ -36,11 +36,11 @@ class VariationalModel(keras.Model):
         return keras.layers.concatenate([z_mean, z_log_var, z])
 
 
-def variational_model(train_data, train_pars, dz=10):
+def variational_model(train_data, train_pars, dz=10, qmax=0.16):
     model = VariationalModel(train_data.shape[1], train_pars.shape[1])
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
     model.compile(optimizer, run_eagerly=True,
-                  loss=ReconstructionLoss(kl_weight=1, dz=dz),
+                  loss=ReconstructionLoss(kl_weight=1, dz=dz, qmax=qmax),
                   #metrics=[kl_metric, nll_metric, reconstruction_mse_metric]
                   )
     return model

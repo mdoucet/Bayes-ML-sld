@@ -53,7 +53,8 @@ def workflow(config, n_train=None, v_size=None,
     # Define the reflectivity model we are going to be generating/using
     m = reflectivity_model.ReflectivityModels(q=q_ref, name=name,
                                               max_thickness=config['max_thick'],
-                                              dz=config['dz'])
+                                              dz=config['dz'],
+                                              qmax=config['qmax'])
     m.model_description =  model
     m.parameters = parameters
 
@@ -77,7 +78,8 @@ def workflow(config, n_train=None, v_size=None,
         print(train_data.shape)
         print(train_pars.shape)
 
-        model = variational_model(train_data, train_pars, dz=config['dz'])
+        model = variational_model(train_data, train_pars, dz=config['dz'],
+                                  qmax=config['qmax'])
         _n_train = min(n_train, train_data.shape[0]-v_size)
         history = model.fit(train_data[:_n_train], train_pars[:_n_train],
                             epochs=epoch, batch_size=4048,

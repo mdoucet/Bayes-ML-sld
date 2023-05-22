@@ -14,11 +14,12 @@ warnings.filterwarnings('ignore')
 class ReconstructionLoss(keras.losses.Loss):
     # We probably need to pass the reflectivity model to __init__
     def __init__(self, name='reflectivity', kl_weight=2, reco_weight=200,
-                 dz=10):
+                 dz=10, qmax=0.16):
         super().__init__(name=name)
         self.kl_weight = kl_weight
         self.reco_weight = reco_weight
         self.dz = dz
+        self.qmax = qmax
 
     def call(self, y_true, y_pred):
         # The predictions from the encoder are concatenated, split them
@@ -29,7 +30,7 @@ class ReconstructionLoss(keras.losses.Loss):
 
         # Reconstruction loss (MSE)
         steps = np.arange(y_true.shape[1]) * self.dz
-        q = np.logspace(np.log10(0.009), np.log10(0.16), num=50)
+        q = np.logspace(np.log10(0.009), np.log10(self.qmax), num=50)
 
         r_true = calculate_reflectivity_from_profile(q, steps, y_true[1].numpy())
         r_pred = calculate_reflectivity_from_profile(q, steps, z_mean[1].numpy())
@@ -50,12 +51,12 @@ class ReconstructionLoss(keras.losses.Loss):
         return self.kl_weight * kl_loss + nll_loss + self.reco_weight * reconstruction_loss
 
 
-def reconstruction_mse_metric(y_true, y_pred, reco_weight=200):
+def reconstruction_mse_metric(y_true, y_pred, reco_weight=200, qmax=0.16):
     # The predictions from the encoder are concatenated, split them
     z_mean, z_log_var, z = tf.split(y_pred, 3, axis=1)
 
     steps = np.arange(y_true.shape[1]) * 10
-    q = np.logspace(np.log10(0.009), np.log10(0.16), num=50)
+    q = np.logspace(np.log10(0.009), np.log10(qmax), num=50)
 
     r_true = calculate_reflectivity_from_profile(q, steps, y_true[1].numpy())
     r_pred = calculate_reflectivity_from_profile(q, steps, z_mean[1].numpy())

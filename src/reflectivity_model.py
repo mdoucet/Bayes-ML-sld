@@ -114,7 +114,8 @@ class ReflectivityModels(object):
                   dict(i=2, par='roughness', bounds=[0, 40]),
                  ]
 
-    def __init__(self, q=None, name='thin_film', max_thickness=1900, dz=5):
+    def __init__(self, q=None, name='thin_film', max_thickness=1900, dz=5,
+                 qmax=0.18):
         self._refl_array = []
         self._z_array = []
         self._sld_array = []
@@ -127,7 +128,7 @@ class ReflectivityModels(object):
         self.dz = dz
 
         if q is None:
-            self.q = np.logspace(np.log10(0.009), np.log10(0.16), num=150)
+            self.q = np.logspace(np.log10(0.009), np.log10(qmax), num=150)
         else:
             self.q = q
 
@@ -138,7 +139,7 @@ class ReflectivityModels(object):
             defines the reflectivity model parameters and how
             the training set should be generated.
         """
-        m = cls(None, name=pars['name'])
+        m = cls(None, name=pars['name'], qmax=pars['qmax'])
         m.model_description =  pars['model']
         m.parameters = pars['parameters']
         m.max_thickness = pars['max_thick']
