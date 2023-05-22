@@ -82,7 +82,7 @@ def workflow(config, n_train=None, v_size=None,
                                   qmax=config['qmax'])
         _n_train = min(n_train, train_data.shape[0]-v_size)
         history = model.fit(train_data[:_n_train], train_pars[:_n_train],
-                            epochs=epoch, batch_size=4048,
+                            epochs=epoch, batch_size=2048,
                             validation_data=(train_data[-v_size:], train_pars[-v_size:]))
 
         save_model(model, history, name, training_dir)
