@@ -54,7 +54,8 @@ def workflow(config, n_train=None, v_size=None,
     m = reflectivity_model.ReflectivityModels(q=q_ref, name=name,
                                               max_thickness=config['max_thick'],
                                               dz=config['dz'],
-                                              qmax=config['qmax'])
+                                              qmax=config['qmax'],
+                                              fix_first_n=config['fix_first_n'])
     m.model_description =  model
     m.parameters = parameters
 

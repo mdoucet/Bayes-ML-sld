@@ -38,7 +38,7 @@ class VariationalModel(keras.Model):
 
 def variational_model(train_data, train_pars, dz=10, qmax=0.16):
     model = VariationalModel(train_data.shape[1], train_pars.shape[1])
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.005)
     model.compile(optimizer, run_eagerly=True,
                   loss=ReconstructionLoss(kl_weight=1, dz=dz, qmax=qmax),
                   #metrics=[kl_metric, nll_metric, reconstruction_mse_metric]
@@ -59,7 +59,7 @@ def create_encoder(input_dim, latent_dim, latent_dim_multiplier=2):
                                      keras.layers.Conv1D(filters=50, kernel_size=5, strides=1, activation='relu', padding='same'),
                                      keras.layers.Flatten(),
                                      keras.layers.Dense(400, activation='relu'),
-                                     # Two new layer not in v1
+                                     # Two new layers not in v1
                                      keras.layers.Dense(400, activation='relu'),
                                      keras.layers.Dense(200, activation='relu'),
                                      keras.layers.Dense(latent_dim*latent_dim_multiplier),

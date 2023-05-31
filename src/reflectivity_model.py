@@ -36,7 +36,7 @@ def calculate_reflectivity_from_profile(q, z_step, sld, q_resolution=0.025):
     sld = np.flip(sld)
 
     zeros = np.zeros(len(q))
-    dq = q_resolution * q
+    dq = q_resolution * q / 2.355
 
     # The QProbe object represents the beam
     probe = QProbe(q, dq, data=(zeros, zeros))
@@ -60,7 +60,7 @@ def calculate_reflectivity_from_profile(q, z_step, sld, q_resolution=0.025):
     return r
 
 
-def calculate_reflectivity(q, model_description, q_resolution=0.02,
+def calculate_reflectivity(q, model_description, q_resolution=0.025,
                            max_thickness=1900, dz=5):
     """
         Reflectivity calculation using refl1d
@@ -115,7 +115,7 @@ class ReflectivityModels(object):
                  ]
 
     def __init__(self, q=None, name='thin_film', max_thickness=1900, dz=5,
-                 qmax=0.18):
+                 qmax=0.18, fix_first_n=0):
         self._refl_array = []
         self._z_array = []
         self._sld_array = []
@@ -126,6 +126,7 @@ class ReflectivityModels(object):
         self._config_name = name
         self.max_thickness = max_thickness
         self.dz = dz
+        self.fix_first_n = fix_first_n
 
         if q is None:
             self.q = np.logspace(np.log10(0.009), np.log10(qmax), num=150)
@@ -144,6 +145,7 @@ class ReflectivityModels(object):
         m.parameters = pars['parameters']
         m.max_thickness = pars['max_thick']
         m.dz = pars['dz']
+        m.fix_first_n = pars['fix_first_n']
         return m
 
     def generate(self, n=100):
@@ -208,9 +210,45 @@ class ReflectivityModels(object):
             _r = np.random.normal(self._refl_array, dr)
             self._train_data = np.log10(_r*self.q**2/self.q[0]**2)
 
-        self._train_pars = self._sld_array
+        _sld_data = np.asarray(self._sld_array)[:, self.fix_first_n:]
+        print("FIX: %s" % self.fix_first_n)
+        print(_sld_data.shape)
+        self._train_pars = _sld_data
 
         return self._train_pars, self._train_data
+
+    def process_predictions(self, preds, log_var_preds=None, sampled=None):
+        """
+            Process predictions so that we get a proper SLD profile.
+            This may not be the case if we kept parts of the profile constant.
+        """
+        if self.fix_first_n == 0:
+            if log_var_preds is not None or sampled is not None:
+                return preds, log_var_preds, sampled
+            else:
+                return preds
+
+        # If we loaded the object from file, we may note have the underlying
+        # SLD data, so we need to generate one to get the fixed part of them
+        # distribution.
+        if len(self._sld_array) == 0:
+            self.generate(1)
+
+        pre = self._sld_array[0][:self.fix_first_n]
+        pre = np.expand_dims(pre, 0)
+        pre = np.repeat(pre, preds.shape[0], axis=0)
+        if log_var_preds is not None or sampled is not None:
+            preds = np.concatenate((pre, preds), axis=1)
+            if sampled is not None:
+                sampled = np.concatenate((pre, sampled), axis=1)
+            if log_var_preds is not None:
+                pre = -1e6*np.ones(self.fix_first_n)
+                pre = np.expand_dims(pre, 0)
+                pre = np.repeat(pre, preds.shape[0], axis=0)
+                log_var_preds = np.concatenate((pre, log_var_preds), axis=1)
+            return preds, log_var_preds, sampled
+        else:
+            return np.concatenate((pre, preds), axis=1)
 
     def save(self, output_dir=''):
         """
