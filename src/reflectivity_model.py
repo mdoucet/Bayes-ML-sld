@@ -5,10 +5,17 @@ import sys
 import os
 import numpy as np
 np.random.seed(42)
+import multiprocessing as mp
 
 import json
 import refl1d
 from refl1d.names import *
+
+
+def _calculation(data):
+    model = ReflectivityModels.from_dict(data['model'])
+    model.compute_reflectivity(data['pars'])
+    return model._refl_array, model._z_array, model._sld_array
 
 
 def prepare_fwd(z, sld, z_step, total_steps):
@@ -95,24 +102,8 @@ def calculate_reflectivity(q, model_description, q_resolution=0.025,
 
 class ReflectivityModels(object):
     # Neutrons come in from the last item in the list
-    model_description = dict(layers=[
-                                dict(sld=2.07, isld=0, thickness=0, roughness=11.1, name='substrate'),
-                                dict(sld=7.53, isld=0, thickness=162.4, roughness=21.9, name='bulk'),
-                                dict(sld=4.79, isld=0, thickness=200.3, roughness=24.9, name='oxide'),
-                                dict(sld=0, isld=0, thickness=0, roughness=0, name='air')
-                         ],
-                         scale=1,
-                         background=0,
-                        )
-    parameters = [
-                  dict(i=0, par='roughness', bounds=[0, 40]),
-                  dict(i=1, par='sld', bounds=[0, 10]),
-                  dict(i=1, par='thickness', bounds=[20, 300]),
-                  dict(i=1, par='roughness', bounds=[0, 40]),
-                  dict(i=2, par='sld', bounds=[1, 10]),
-                  dict(i=2, par='thickness', bounds=[50, 300]),
-                  dict(i=2, par='roughness', bounds=[0, 40]),
-                 ]
+    model_description = {}
+    parameters = []
 
     def __init__(self, q=None, name='thin_film', max_thickness=1900, dz=5,
                  qmax=0.18, fix_first_n=0):
@@ -127,6 +118,7 @@ class ReflectivityModels(object):
         self.max_thickness = max_thickness
         self.dz = dz
         self.fix_first_n = fix_first_n
+        self.qmax = qmax
 
         if q is None:
             self.q = np.logspace(np.log10(0.009), np.log10(qmax), num=150)
@@ -148,6 +140,15 @@ class ReflectivityModels(object):
         m.fix_first_n = pars['fix_first_n']
         return m
 
+    def to_dict(self):
+        return dict(name=self._config_name,
+                    qmax=self.qmax,
+                    model=self.model_description,
+                    parameters=self.parameters,
+                    max_thick=self.max_thickness,
+                    dz=self.dz,
+                    fix_first_n=self.fix_first_n)
+
     def generate(self, n=100):
         """
             Generate a random sample of models
@@ -158,7 +159,7 @@ class ReflectivityModels(object):
         pars_array = self.to_model_parameters(random_pars)
 
         # Compute model parameters and reflectivity using these values
-        self.compute_reflectivity(pars_array)
+        self.compute_reflectivity_parallel(pars_array)
 
     def to_model_parameters(self, pars):
         """
@@ -173,13 +174,32 @@ class ReflectivityModels(object):
 
         return pars_array
 
+    def compute_reflectivity_parallel(self, pars_array):
+        """
+            Transform an array of parameters to a list of calculable models
+            and compute reflectivity
+        """
+        n_worker = 16
+        p_data = np.array_split(pars_array, n_worker)
+        data = []
+        model = self.to_dict()
+
+        for _p_partial in p_data:
+            data.append(dict(model=model, pars=_p_partial))
+
+        with mp.Pool(n_worker) as p:
+            results = p.map(_calculation, data)
+
+        for r in results:
+            self._refl_array.extend(r[0])
+            self._z_array.extend(r[1])
+            self._sld_array.extend(r[2])
+
     def compute_reflectivity(self, pars_array):
         """
             Transform an array of parameters to a list of calculable models
             and compute reflectivity
         """
-        print("Computing reflectivity")
-
         # Compute reflectivity
         for p in pars_array:
             _desc = self.get_model_description(p)
