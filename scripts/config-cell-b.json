@@ -8,7 +8,7 @@
 "use_errors":true,
 "max_thick":2000,
 "dz":5,
-"fix_first_n":0,
+"fix_first_n":90,
 "q_resolution":0.025,
 "qmax":0.18,
 "parameters":[

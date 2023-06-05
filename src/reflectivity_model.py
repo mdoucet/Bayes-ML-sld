@@ -159,7 +159,8 @@ class ReflectivityModels(object):
         pars_array = self.to_model_parameters(random_pars)
 
         # Compute model parameters and reflectivity using these values
-        self.compute_reflectivity_parallel(pars_array)
+        #self.compute_reflectivity_parallel(pars_array)
+        self.compute_reflectivity(pars_array)
 
     def to_model_parameters(self, pars):
         """
