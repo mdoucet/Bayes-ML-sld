@@ -20,7 +20,7 @@ Train the ML model:
 python train.py  -n 100000 -v 1000 -f config-erik.json
 ```
 
-Note: See the following example to call a fit from code insteand of using the refl1d client.
+Note: See the following example to call a fit from code insteand of using the refl1d client: https://github.com/pozzo-research-group/c-wolf-blends-morphology/blob/master/sans/PS_Fitting/Polystyrene_Fits.ipynb
 
 TODO:
 
